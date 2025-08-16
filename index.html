@@ -68,20 +68,24 @@
 <main>
   <div class="summary">
     <div class="summary-card">
+     <h2 id="totalOutput">0 kWh</h2>
+      <p>Total Production</p>
+    </div>
+    <div class="summary-card">
       <h2 id="totalExport">0 kWh</h2>
       <p>Total Export</p>
     </div>
     <div class="summary-card">
-      <h2 id="totalOutput">0 kWh</h2>
-      <p>Total Output</p>
+      <h2 id="maxDay">-</h2>
+      <p>Highest Production Day</p>
     </div>
     <div class="summary-card">
       <h2 id="avgOutput">0 kWh</h2>
       <p>Average Daily Output</p>
     </div>
     <div class="summary-card">
-      <h2 id="maxDay">-</h2>
-      <p>Highest Output Day</p>
+    <h2 id="monthlyEarnings">£0.00</h2>
+    <p>Monthly Earnings</p>
     </div>
     <div class="summary-card">
       <h2 id="maxBattery">-</h2>
@@ -198,13 +202,51 @@ dataRows.forEach(r => {
 
 // Update summary cards
 $('#totalOutput').text(`${totalMain.toFixed(2)} kWh`);
+const earnings = totalExport * 0.165;
 $('#totalExport').html(`
-  ${totalExport.toFixed(2)} kWh<br>
-  (£${earnings.toFixed(2)})
+  ${totalExport.toFixed(2)} kWh
+  <br>
+  <span style="font-size:0.8em; color:#555;">£${earnings.toFixed(2)}</span>
 `);
-$('#avgOutput').text(`${(totalMain / dataRows.length).toFixed(2)} kWh`);
+const avgOutput = totalMain / dataRows.length;
+const avgEarnings = (totalExport / dataRows.length) * 0.165;
+
+$('#avgOutput').html(`
+  ${avgOutput.toFixed(2)} kWh
+  <br>
+  <span style="font-size:0.8em; color:#555;">£${avgEarnings.toFixed(2)} / day</span>
+`);
 $('#maxDay').text(`${maxMain.value.toFixed(2)} kWh (${maxMain.date})`);
 $('#maxBattery').text(`${maxBattery.value.toFixed(2)} kWh (${maxBattery.date})`);
+// --- Monthly earnings calculation ---
+const monthlyTotals = {};
+
+dataRows.forEach(r => {
+  const year = r[0].slice(0,4);
+  const month = r[0].slice(4,6);
+  const key = `${year}-${month}`;
+  const exportKWh = Number(r[2]) / 1000;
+
+  if (!monthlyTotals[key]) monthlyTotals[key] = 0;
+  monthlyTotals[key] += exportKWh;
+});
+
+// Find the latest two months
+const sortedMonths = Object.keys(monthlyTotals).sort().reverse(); // newest first
+const thisMonth = sortedMonths[0];
+const lastMonth = sortedMonths[1];
+
+const thisMonthEarnings = (monthlyTotals[thisMonth] * 0.165).toFixed(2);
+const lastMonthEarnings = lastMonth ? (monthlyTotals[lastMonth] * 0.165).toFixed(2) : "0.00";
+
+// Update card
+$('#monthlyEarnings').html(`
+  £${thisMonthEarnings} (${thisMonth})
+  <br>
+  <span style="font-size:0.8em; color:#555;">
+    Last month: £${lastMonthEarnings}
+  </span>
+`);
 
 // Initialize DataTable with newest date first
 $('#solarTable').DataTable({
