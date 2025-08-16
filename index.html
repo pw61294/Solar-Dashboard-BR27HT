@@ -198,7 +198,10 @@ dataRows.forEach(r => {
 
 // Update summary cards
 $('#totalOutput').text(`${totalMain.toFixed(2)} kWh`);
-$('#totalExport').text(`${totalExport.toFixed(2)} kWh`);
+$('#totalExport').html(`
+  ${totalExport.toFixed(2)} kWh<br>
+  (£${earnings.toFixed(2)})
+`);
 $('#avgOutput').text(`${(totalMain / dataRows.length).toFixed(2)} kWh`);
 $('#maxDay').text(`${maxMain.value.toFixed(2)} kWh (${maxMain.date})`);
 $('#maxBattery').text(`${maxBattery.value.toFixed(2)} kWh (${maxBattery.date})`);
