@@ -199,8 +199,9 @@ $('#avgOutput').text(`${(totalMain / dataRows.length).toFixed(2)} kWh`);
 $('#maxDay').text(`${maxMain.value.toFixed(2)} kWh (${maxMain.date})`);
 $('#maxBattery').text(`${maxBattery.value.toFixed(2)} kWh (${maxBattery.date})`);
 
+// Initialize DataTable with newest date first
 $('#solarTable').DataTable({
-  order: [[0, 'desc']] // sort by date column (0) descending
+  order: [[0, 'desc']]
 });
 
 new Chart(document.getElementById('solarChart'), {
