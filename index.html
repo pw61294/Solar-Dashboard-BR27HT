@@ -63,7 +63,7 @@
 <body>
 <header>
   <h1>Paul's Solar Production Dashboard</h1>
-  <p>Daily Solar Output Overview</p>
+  <p>Daily Solar Production Overview</p>
 </header>
 <main>
   <div class="summary">
@@ -168,7 +168,7 @@ const batteryData = [];
 let totalMain = 0;
 let totalExport = 0;
 let maxMain = { value: 0, date: "" };
-let maxBattery = { value: 0, date: "" };
+let maxExport = { value: 0, date: "" };
 
 dataRows.forEach(r => {
   const y = r[0].slice(0,4), m = r[0].slice(4,6), d = r[0].slice(6,8);
@@ -186,7 +186,7 @@ dataRows.forEach(r => {
   totalExport += battery;
 
   if (main > maxMain.value) maxMain = { value: main, date: displayDate };
-  if (battery > maxBattery.value) maxBattery = { value: battery, date: displayDate };
+  if (battery > maxExport.value) maxExport = { value: battery, date: displayDate };
 
   $('#solarTable tbody').append(`
     <tr>
@@ -217,7 +217,7 @@ $('#avgOutput').html(`
   <span style="font-size:0.8em; color:#555;">£${avgEarnings.toFixed(2)} / day</span>
 `);
 $('#maxDay').text(`${maxMain.value.toFixed(2)} kWh (${maxMain.date})`);
-$('#maxBattery').text(`${maxBattery.value.toFixed(2)} kWh (${maxBattery.date})`);
+$('#maxBattery').text(`${maxExport.value.toFixed(2)} kWh (${maxExport.date})`);
 // --- Monthly earnings calculation ---
 const monthlyTotals = {};
 
