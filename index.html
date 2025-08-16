@@ -167,30 +167,34 @@ let maxMain = { value: 0, date: "" };
 let maxBattery = { value: 0, date: "" };
 
 dataRows.forEach(r => {
-  const date = `${r[0].slice(0,4)}-${r[0].slice(4,6)}-${r[0].slice(6,8)}`;
+  const y = r[0].slice(0,4), m = r[0].slice(4,6), d = r[0].slice(6,8);
+  const sortKey = `${y}${m}${d}`;              // e.g. 20250815  (perfect for sorting)
+  const displayDate = `${y}-${m}-${d}`;        // what the user sees
+
   const main = Number(r[1]) / 1000;
   const battery = Number(r[2]) / 1000;
 
-  chartLabels.push(date);
+  chartLabels.push(displayDate);
   mainData.push(main);
   batteryData.push(battery);
 
   totalMain += main;
-  totalExport += battery; // sum total exported kWh
+  totalExport += battery;
 
-  if (main > maxMain.value) maxMain = { value: main, date };
-  if (battery > maxBattery.value) maxBattery = { value: battery, date };
+  if (main > maxMain.value) maxMain = { value: main, date: displayDate };
+  if (battery > maxBattery.value) maxBattery = { value: battery, date: displayDate };
 
   $('#solarTable tbody').append(`
     <tr>
-      <td>${date}</td>
+      <td data-order="${sortKey}">${displayDate}</td>
       <td>${main.toFixed(2)}</td>
       <td>${battery.toFixed(2)}</td>
-      <td>${r[3]}</td>
+      <td>${Number(r[3]).toLocaleString()}</td>
       <td>${r[4]}</td>
     </tr>
   `);
 });
+
 
 // Update summary cards
 $('#totalOutput').text(`${totalMain.toFixed(2)} kWh`);
