@@ -1,158 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Paul's Solar Production Dashboard</title>
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-  <style>
-  body {
-    font-family: Arial, sans-serif;
-    background: #f5f5f5;
-    margin: 0;
-    padding: 0;
-    transition: background 0.3s, color 0.3s;
-  }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paul's Solar Production Dashboard</title>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f5f5f5;
+  margin: 0;
+  padding: 0;
+  transition: background 0.3s, color 0.3s;
+}
+header {
+  background: #2c3e50;
+  color: #fff;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.header-center {
+  text-align: center;
+  flex-grow: 1;
+}
+.header-left, .header-right {
+  width: 80px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+header button {
+  cursor: pointer;
+  font-size: 1.2em;
+  background: none;
+  border: none;
+  padding: 0;
+}
+main {
+  padding: 20px;
+  max-width: 1200px;
+  margin: auto;
+}
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+.summary-card {
+  flex: 1 1 calc(25% - 15px);
+  background: #fff;
+  border-radius: 10px;
+  padding: 15px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: background 0.3s, color 0.3s;
+}
+.summary-card h2 { margin: 0; font-size: 1.5em; color: #2c3e50; }
+.summary-card p { margin: 5px 0 0; font-size: 0.9em; color: #555; }
+canvas {
+  background: #fff;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 30px;
+  transition: background 0.3s;
+}
+table {
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: background 0.3s, color 0.3s;
+}
 
-  header {
-    background: #2c3e50;
-    color: #fff;
-    padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+/* 🌙 Dark Mode */
+body.dark-mode {
+  background: #1e1e1e;
+  color: #eee;
+}
+body.dark-mode header { background: #111; color: #eee; }
+body.dark-mode .summary-card {
+  background: #2a2a2a; color: #eee;
+  box-shadow: 0 2px 5px rgba(255,255,255,0.1);
+}
+body.dark-mode .summary-card h2 { color: #eee; }
+body.dark-mode .summary-card p { color: #bbb; }
+body.dark-mode canvas { background: #2a2a2a; }
+body.dark-mode table { background: #2a2a2a; color: #eee; }
 
-  .header-center {
-    text-align: center;
-    flex-grow: 1;
-  }
+/* DataTable Dark Mode */
+#solarTable.dark-mode { background: #2a2a2a; color: #eee; }
+#solarTable.dark-mode th,
+#solarTable.dark-mode td { color: #eee; border-color: #444; }
+.dataTables_wrapper .dataTables_paginate .paginate_button { color: #eee !important; }
 
-  .header-left,
-  .header-right {
-    width: 80px; /* keeps spacing even left/right */
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-  }
+/* Dark mode toggle button */
+#darkModeToggle { font-size: 1.3em; background: none; border: none; cursor: pointer; padding: 0; margin: 0; }
+#darkModeToggle:focus { outline: none; }
 
-  header button {
-    padding: 8px;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 1.2em;
-    background: #fff;
-    color: #2c3e50;
-    transition: background 0.3s, color 0.3s, transform 0.2s;
-  }
-
-  header button:hover {
-    transform: scale(1.1);
-  }
-
-  main {
-    padding: 20px;
-    max-width: 1200px;
-    margin: auto;
-  }
-
-  .summary {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-bottom: 20px;
-  }
-
-  .summary-card {
-    flex: 1 1 calc(25% - 15px);
-    background: #fff;
-    border-radius: 10px;
-    padding: 15px;
-    text-align: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    transition: background 0.3s, color 0.3s;
-  }
-
-  .summary-card h2 {
-    margin: 0;
-    font-size: 1.5em;
-    color: #2c3e50;
-  }
-
-  .summary-card p {
-    margin: 5px 0 0;
-    font-size: 0.9em;
-    color: #555;
-  }
-
-  canvas {
-    background: #fff;
-    border-radius: 10px;
-    padding: 15px;
-    margin-bottom: 30px;
-    transition: background 0.3s;
-  }
-
-  table {
-    background: #fff;
-    border-radius: 10px;
-    overflow: hidden;
-    transition: background 0.3s, color 0.3s;
-  }
-
-  /* 🌙 Dark Mode */
-  body.dark-mode {
-    background: #1e1e1e;
-    color: #eee;
-  }
-
-  body.dark-mode header {
-    background: #111;
-    color: #eee;
-  }
-
-  body.dark-mode .summary-card {
-    background: #2a2a2a;
-    color: #eee;
-    box-shadow: 0 2px 5px rgba(255,255,255,0.1);
-  }
-
-  body.dark-mode .summary-card h2 {
-    color: #eee;
-  }
-
-  body.dark-mode .summary-card p {
-    color: #bbb;
-  }
-
-  body.dark-mode canvas {
-    background: #2a2a2a;
-  }
-
-  body.dark-mode table {
-    background: #2a2a2a;
-    color: #eee;
-  }
-  #darkModeToggle {
-   background: none;
-   border: none;
-   font-size: 1.2rem;
-   cursor: pointer;
-   padding: 0;
-   margin: 0;
-  }
-  #darkModeToggle:focus {
-   outline: none;
-  }
+/* Responsive cards */
+@media(max-width:800px) {
+  .summary-card { flex: 1 1 100%; }
+}
 </style>
 </head>
 <body>
 <header>
   <div class="header-left">
-   <a href="top10.html" style="color:white; text-decoration:none;                font-size:1em;">🏆 Top 10</a>
+    <a href="top10.html" style="color:white; text-decoration:none; font-size:1em;">🏆 Top 10</a>
   </div>
-  <div class="header-left"></div> <!-- empty placeholder to balance flex -->
+  <div class="header-left"></div>
   <div class="header-center">
     <h1>Paul's Solar Production Dashboard</h1>
     <p>Daily Solar Production Overview</p>
@@ -161,47 +119,31 @@
     <button id="darkModeToggle">🌙</button>
   </div>
 </header>
-<main>
-  <div class="summary">
-    <div class="summary-card">
-     <h2 id="totalOutput">0 kWh</h2>
-      <p>Total Production</p>
-    </div>
-    <div class="summary-card">
-      <h2 id="maxDay">-</h2>
-      <p>Highest Production Day</p>
-    </div>
-    <div class="summary-card">
-      <h2 id="maxBattery">-</h2>
-      <p>Highest Export Day</p>
-    </div>
-    <div class="summary-card">
-      <h2 id="avgOutput">0 kWh</h2>
-      <p>Average Daily Output</p>
-    </div>
-    <div class="summary-card">
-    <h2 id="monthlyEarnings">£0.00</h2>
-    <p>Monthly Earnings</p>
-    </div>
-    <div class="summary-card">
-      <h2 id="totalExport">0 kWh</h2>
-      <p>Total Export</p>
-    </div>
-  </div>
 
-  <canvas id="solarChart" height="100"></canvas>
-  <table id="solarTable" class="display" style="width:100%">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Generated kWh</th>
-        <th>Exported kWh</th>
-        <th>Peak Watts</th>
-        <th>Peak Time</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+<main>
+<div class="summary">
+  <div class="summary-card"><h2 id="totalOutput">0 kWh</h2><p>Total Production</p></div>
+  <div class="summary-card"><h2 id="maxDay">-</h2><p>Highest Production Day</p></div>
+  <div class="summary-card"><h2 id="maxBattery">-</h2><p>Highest Export Day</p></div>
+  <div class="summary-card"><h2 id="avgOutput">0 kWh</h2><p>Average Daily Output</p></div>
+  <div class="summary-card"><h2 id="monthlyEarnings">£0.00</h2><p>Monthly Earnings</p></div>
+  <div class="summary-card"><h2 id="totalExport">0 kWh</h2><p>Total Export</p></div>
+</div>
+
+<canvas id="solarChart" height="100"></canvas>
+<table id="solarTable" class="display" style="width:100%">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Generated kWh</th>
+      <th>Exported kWh</th>
+      <th>Peak Watts</th>
+      <th>Peak Time</th>
+      <th>Weather</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
 </main>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -209,82 +151,79 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 const rawData = `
-20250702,291,0,577,18:37
-20250703,33626,15500,4853,13:29
-20250704,35737,14900,5415,13:32
-20250705,18870,8100,4463,13:38
-20250706,20006,4200,5044,12:31
-20250707,25658,7400,5989,14:02
-20250708,37780,17800,5372,11:11
-20250709,34654,13200,5962,13:30
-20250710,36394,16200,4359,12:26
-20250711,36446,14400,4244,11:34
-20250712,36147,12800,4300,11:30
-20250713,28394,3300,4901,14:12
-20250714,33121,11000,5641,12:41
-20250715,31809,9900,5453,12:13
-20250716,35773,8100,5685,12:28
-20250717,17364,6700,4615,10:49
-20250718,32937,10800,5583,11:20
-20250719,11048,1800,4861,14:52
-20250720,20234,13200,5314,14:50
-20250721,27296,12500,5681,11:18
-20250722,21117,6400,6101,11:27
-20250723,16972,6900,3755,09:59
-20250724,12494,3900,3593,11:25
-20250725,30961,19600,4888,12:26
-20250726,20433,8300,4595,15:31
-20250727,18261,13400,5018,13:52
-20250728,33654,14800,5881,14:07
-20250729,15511,200,4001,12:44
-20250730,19034,7700,5185,11:11
-20250731,13691,100,5251,13:13
-20250801,20828,5600,5534,12:02
-20250802,21967,7400,4393,10:34
-20250803,23685,5700,4973,10:53
-20250804,15341,100,2885,12:10
-20250805,30710,12800,5197,13:30
-20250806,37308,26100,4761,13:27
-20250807,23584,9400,5443,12:26
-20250808,33645,22500,5241,14:17
-20250809,42103,14200,8600,13:09
-20250810,54640,30800,7734,13:04
-20250811,53647,31200,6829,11:52
-20250812,52670,29600,6749,12:25
-20250813,22965,200,5985,14:44
-20250814,35556,17900,8080,13:35
-20250815,50293,20900,6776,12:12
-20250816,10421,2000,1867,13:52
-20250817,52312,21700,6934,12:01
+20250702,291,0,577,18:37,Cloudy
+20250703,33626,15500,4853,13:29,Partly Cloudy
+20250704,35737,14900,5415,13:32,Partly Cloudy
+20250705,18870,8100,4463,13:38,Rainy
+20250706,20006,4200,5044,12:31,Partly Cloudy
+20250707,25658,7400,5989,14:02,Partly Cloudy
+20250708,37780,17800,5372,11:11,Sunny
+20250709,34654,13200,5962,13:30,Partly Cloudy
+20250710,36394,16200,4359,12:26,Partly Cloudy
+20250711,36446,14400,4244,11:34,Partly Cloudy
+20250712,36147,12800,4300,11:30,Partly Cloudy
+20250713,28394,3300,4901,14:12,Partly Cloudy
+20250714,33121,11000,5641,12:41,Partly Cloudy
+20250715,31809,9900,5453,12:13,Partly Cloudy
+20250716,35773,8100,5685,12:28,Partly Cloudy
+20250717,17364,6700,4615,10:49,Rainy
+20250718,32937,10800,5583,11:20,Partly Cloudy
+20250719,11048,1800,4861,14:52,Cloudy
+20250720,20234,13200,5314,14:50,Partly Cloudy
+20250721,27296,12500,5681,11:18,Partly Cloudy
+20250722,21117,6400,6101,11:27,Cloudy
+20250723,16972,6900,3755,09:59,Rainy
+20250724,12494,3900,3593,11:25,Cloudy
+20250725,30961,19600,4888,12:26,Partly Cloudy
+20250726,20433,8300,4595,15:31,Partly Cloudy
+20250727,18261,13400,5018,13:52,Cloudy
+20250728,33654,14800,5881,14:07,Partly Cloudy
+20250729,15511,200,4001,12:44,Rainy
+20250730,19034,7700,5185,11:11,Cloudy
+20250731,13691,100,5251,13:13,Cloudy
+20250801,20828,5600,5534,12:02,Cloudy
+20250802,21967,7400,4393,10:34,Cloudy
+20250803,23685,5700,4973,10:53,Cloudy
+20250804,15341,100,2885,12:10,Cloudy
+20250805,30710,12800,5197,13:30,Partly Cloudy
+20250806,37308,26100,4761,13:27,Partly Cloudy
+20250807,23584,9400,5443,12:26,Partly Cloudy
+20250808,33645,22500,5241,14:17,Partly Cloudy
+20250809,42103,14200,8600,13:09,Sunny
+20250810,54640,30800,7734,13:04,Sunny
+20250811,53647,31200,6829,11:52,Sunny
+20250812,52670,29600,6749,12:25,Sunny
+20250813,22965,200,5985,14:44,Cloudy
+20250814,35556,17900,8080,13:35,Partly Cloudy
+20250815,50293,20900,6776,12:12,Sunny
+20250816,10421,2000,1867,13:52,Cloudy
+20250817,52312,21700,6934,12:01,Sunny
 `;
 
 const dataRows = rawData.trim().split("\n").map(row => row.split(","));
-const chartLabels = [];
-const mainData = [];
-const batteryData = [];
+const chartLabels = [], mainData = [], batteryData = [];
+let totalMain=0, totalExport=0, maxMain={value:0,date:""}, maxExport={value:0,date:""};
 
-let totalMain = 0;
-let totalExport = 0;
-let maxMain = { value: 0, date: "" };
-let maxExport = { value: 0, date: "" };
+const weatherEmoji = {
+  "Sunny": "☀️ Sunny",
+  "Cloudy": "☁️ Cloudy",
+  "Partly Cloudy": "⛅ Partly Cloudy",
+  "Rainy": "🌧️ Rainy"
+};
 
-dataRows.forEach(r => {
-  const y = r[0].slice(0,4), m = r[0].slice(4,6), d = r[0].slice(6,8);
-  const sortKey = `${y}${m}${d}`;
-  const displayDate = `${y}-${m}-${d}`;
-
-  const main = Number(r[1]) / 1000;
-  const battery = Number(r[2]) / 1000;
+dataRows.forEach(r=>{
+  const y=r[0].slice(0,4), m=r[0].slice(4,6), d=r[0].slice(6,8);
+  const sortKey=`${y}${m}${d}`, displayDate=`${y}-${m}-${d}`;
+  const main=Number(r[1])/1000, battery=Number(r[2])/1000;
 
   chartLabels.push(displayDate);
   mainData.push(main);
   batteryData.push(battery);
 
-  totalMain += main;
-  totalExport += battery;
-
-  if (main > maxMain.value) maxMain = { value: main, date: displayDate };
-  if (battery > maxExport.value) maxExport = { value: battery, date: displayDate };
+  totalMain+=main;
+  totalExport+=battery;
+  if(main>maxMain.value) maxMain={value:main,date:displayDate};
+  if(battery>maxExport.value) maxExport={value:battery,date:displayDate};
 
   $('#solarTable tbody').append(`
     <tr>
@@ -293,108 +232,71 @@ dataRows.forEach(r => {
       <td>${battery.toFixed(2)}</td>
       <td>${Number(r[3]).toLocaleString()}</td>
       <td>${r[4]}</td>
+      <td>${weatherEmoji[r[5]]||r[5]}</td>
     </tr>
   `);
 });
 
-// Update summary cards
+// Summary cards
 $('#totalOutput').text(`${totalMain.toFixed(2)} kWh`);
-const earnings = totalExport * 0.165;
-$('#totalExport').html(`
-  ${totalExport.toFixed(2)} kWh
-  <br>
-  <span style="font-size:0.8em; color:#555;">£${earnings.toFixed(2)}</span>
-`);
-const avgOutput = totalMain / dataRows.length;
-const avgEarnings = (totalExport / dataRows.length) * 0.165;
-
-$('#avgOutput').html(`
-  ${avgOutput.toFixed(2)} kWh
-  <br>
-  <span style="font-size:0.8em; color:#555;">£${avgEarnings.toFixed(2)} / day</span>
-`);
+const earnings=totalExport*0.165;
+$('#totalExport').html(`${totalExport.toFixed(2)} kWh<br><span style="font-size:0.8em; color:#555;">£${earnings.toFixed(2)}</span>`);
+const avgOutput=totalMain/dataRows.length;
+const avgEarnings=(totalExport/dataRows.length)*0.165;
+$('#avgOutput').html(`${avgOutput.toFixed(2)} kWh<br><span style="font-size:0.8em; color:#555;">£${avgEarnings.toFixed(2)} / day</span>`);
 $('#maxDay').text(`${maxMain.value.toFixed(2)} kWh (${maxMain.date})`);
 $('#maxBattery').text(`${maxExport.value.toFixed(2)} kWh (${maxExport.date})`);
 
-// Monthly earnings calculation
-const monthlyTotals = {};
-dataRows.forEach(r => {
-  const year = r[0].slice(0,4);
-  const month = r[0].slice(4,6);
-  const key = `${year}-${month}`;
-  const exportKWh = Number(r[2]) / 1000;
-  if (!monthlyTotals[key]) monthlyTotals[key] = 0;
-  monthlyTotals[key] += exportKWh;
+// Monthly earnings
+const monthlyTotals={};
+dataRows.forEach(r=>{
+  const key=`${r[0].slice(0,4)}-${r[0].slice(4,6)}`;
+  const exportKWh=Number(r[2])/1000;
+  if(!monthlyTotals[key]) monthlyTotals[key]=0;
+  monthlyTotals[key]+=exportKWh;
 });
-const sortedMonths = Object.keys(monthlyTotals).sort().reverse();
-const thisMonth = sortedMonths[0];
-const lastMonth = sortedMonths[1];
-const thisMonthEarnings = (monthlyTotals[thisMonth] * 0.165).toFixed(2);
-const lastMonthEarnings = lastMonth ? (monthlyTotals[lastMonth] * 0.165).toFixed(2) : "0.00";
-$('#monthlyEarnings').html(`
-  £${thisMonthEarnings} (${thisMonth})
-  <br>
-  <span style="font-size:0.8em; color:#555;">
-    Last month: £${lastMonthEarnings}
-  </span>
-`);
+const sortedMonths=Object.keys(monthlyTotals).sort().reverse();
+const thisMonth=sortedMonths[0], lastMonth=sortedMonths[1];
+const thisMonthEarnings=(monthlyTotals[thisMonth]*0.165).toFixed(2);
+const lastMonthEarnings=lastMonth?(monthlyTotals[lastMonth]*0.165).toFixed(2):"0.00";
+$('#monthlyEarnings').html(`£${thisMonthEarnings} (${thisMonth})<br><span style="font-size:0.8em; color:#555;">Last month: £${lastMonthEarnings}</span>`);
 
 // DataTable
-$('#solarTable').DataTable({
-  order: [[0, 'desc']]
-});
+const solarTable=$('#solarTable').DataTable({order:[[0,'desc']],responsive:true});
 
-// Chart
-new Chart(document.getElementById('solarChart'), {
-  type: 'line',
-  data: {
-    labels: chartLabels,
-    datasets: [
-      {
-        label: 'Generated (kWh)',
-        data: mainData,
-        borderColor: 'rgba(255, 99, 132, 1)',
-        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-        fill: true,
-        tension: 0.3
-      },
-      {
-        label: 'Exported (kWh)',
-        data: batteryData,
-        borderColor: 'rgba(54, 162, 235, 1)',
-        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-        fill: true,
-        tension: 0.3
-      }
-    ]
-  },
-  options: {
-    responsive: true,
-    plugins: {
-      legend: { position: 'top' },
-      title: {
-        display: true,
-        text: 'Daily Solar Production'
-      }
+// Chart.js
+const ctx=document.getElementById('solarChart').getContext('2d');
+function createChart(isDark){
+  return new Chart(ctx,{
+    type:'line',
+    data:{labels:chartLabels,datasets:[
+      {label:'Generated (kWh)',data:mainData,borderColor:'rgba(255,99,132,1)',backgroundColor:'rgba(255,99,132,0.2)',fill:true,tension:0.3},
+      {label:'Exported (kWh)',data:batteryData,borderColor:'rgba(54,162,235,1)',backgroundColor:'rgba(54,162,235,0.2)',fill:true,tension:0.3}
+    ]},
+    options:{
+      responsive:true,
+      plugins:{legend:{labels:{color:isDark?'#eee':'#000'}},title:{display:true,text:'Daily Solar Production',color:isDark?'#eee':'#000'}},
+      scales:{x:{ticks:{color:isDark?'#eee':'#000'}},y:{ticks:{color:isDark?'#eee':'#000'}}}
     }
-  }
-});
-
-// 🌙 Dark Mode Toggle
-const toggle = document.getElementById("darkModeToggle");
-if (localStorage.getItem("darkMode") === "enabled") {
-  document.body.classList.add("dark-mode");
-  toggle.textContent = "☀️";
+  });
 }
-toggle.addEventListener("click", () => {
+let solarChart=createChart(document.body.classList.contains('dark-mode'));
+
+// Dark Mode Toggle
+const toggle=document.getElementById("darkModeToggle");
+if(localStorage.getItem("darkMode")==="enabled"){document.body.classList.add("dark-mode");toggle.textContent="☀️";}
+toggle.addEventListener("click",()=>{
   document.body.classList.toggle("dark-mode");
-  if (document.body.classList.contains("dark-mode")) {
-    localStorage.setItem("darkMode", "enabled");
-    toggle.textContent = "☀️";
-  } else {
-    localStorage.setItem("darkMode", "disabled");
-    toggle.textContent = "🌙";
-  }
+  const isDark=document.body.classList.contains("dark-mode");
+  localStorage.setItem("darkMode",isDark?"enabled":"disabled");
+  toggle.textContent=isDark?"☀️":"🌙";
+
+  // Update chart
+  solarChart.destroy();
+  solarChart=createChart(isDark);
+
+  // Update table
+  if(isDark){$('#solarTable').addClass('dark-mode');}else{$('#solarTable').removeClass('dark-mode');}
 });
 </script>
 </body>
