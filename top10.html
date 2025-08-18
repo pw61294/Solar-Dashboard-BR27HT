@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Top 10 Solar Production Days</title>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 0;
+      transition: background 0.3s, color 0.3s;
+    }
+    header {
+      background: #2c3e50;
+      color: #fff;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header a {
+      color: #fff;
+      text-decoration: none;
+    }
+    main {
+      max-width: 1000px;
+      margin: auto;
+      padding: 20px;
+    }
+    table {
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 20px;
+    }
+    canvas {
+      background: #fff;
+      border-radius: 10px;
+      padding: 15px;
+    }
+    /* Dark mode */
+    body.dark-mode {
+      background: #1e1e1e;
+      color: #eee;
+    }
+    body.dark-mode header {
+      background: #111;
+      color: #eee;
+    }
+    body.dark-mode table,
+    body.dark-mode canvas {
+      background: #2a2a2a;
+      color: #eee;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <a href="index.html">⬅ Back to Dashboard</a>
+  <h2>🏆 Top 10 Solar Production Days</h2>
+  <button id="darkModeToggle">🌙</button>
+</header>
+
+<main>
+  <canvas id="top10Chart" height="120"></canvas>
+
+  <table id="top10Table" class="display" style="width:100%">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Generated (kWh)</th>
+        <th>Exported (kWh)</th>
+        <th>Peak Watts</th>
+        <th>Peak Time</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</main>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const rawData = `
+20250702,291,0,577,18:37
+20250703,33626,15500,4853,13:29
+20250704,35737,14900,5415,13:32
+20250705,18870,8100,4463,13:38
+20250706,20006,4200,5044,12:31
+20250707,25658,7400,5989,14:02
+20250708,37780,17800,5372,11:11
+20250709,34654,13200,5962,13:30
+20250710,36394,16200,4359,12:26
+20250711,36446,14400,4244,11:34
+20250712,36147,12800,4300,11:30
+20250713,28394,3300,4901,14:12
+20250714,33121,11000,5641,12:41
+20250715,31809,9900,5453,12:13
+20250716,35773,8100,5685,12:28
+20250717,17364,6700,4615,10:49
+20250718,32937,10800,5583,11:20
+20250719,11048,1800,4861,14:52
+20250720,20234,13200,5314,14:50
+20250721,27296,12500,5681,11:18
+20250722,21117,6400,6101,11:27
+20250723,16972,6900,3755,09:59
+20250724,12494,3900,3593,11:25
+20250725,30961,19600,4888,12:26
+20250726,20433,8300,4595,15:31
+20250727,18261,13400,5018,13:52
+20250728,33654,14800,5881,14:07
+20250729,15511,200,4001,12:44
+20250730,19034,7700,5185,11:11
+20250731,13691,100,5251,13:13
+20250801,20828,5600,5534,12:02
+20250802,21967,7400,4393,10:34
+20250803,23685,5700,4973,10:53
+20250804,15341,100,2885,12:10
+20250805,30710,12800,5197,13:30
+20250806,37308,26100,4761,13:27
+20250807,23584,9400,5443,12:26
+20250808,33645,22500,5241,14:17
+20250809,42103,14200,8600,13:09
+20250810,54640,30800,7734,13:04
+20250811,53647,31200,6829,11:52
+20250812,52670,29600,6749,12:25
+20250813,22965,200,5985,14:44
+20250814,35556,17900,8080,13:35
+20250815,50293,20900,6776,12:12
+20250816,10421,2000,1867,13:52
+20250817,52312,21700,6934,12:01
+`;
+
+$(document).ready(function(){
+  // Parse rows
+  const dataRows = rawData.trim().split("\n").map(r => r.split(",")).map(r => {
+    return {
+      date: `${r[0].slice(0,4)}-${r[0].slice(4,6)}-${r[0].slice(6,8)}`,
+      generated: Number(r[1]) / 1000,
+      exported: Number(r[2]) / 1000,
+      peak: Number(r[3]),
+      time: r[4]
+    };
+  });
+
+  // Top 10 sorted by generated
+  const top10 = dataRows.sort((a,b) => b.generated - a.generated).slice(0,10);
+
+  // Insert rows
+  top10.forEach(r => {
+    $('#top10Table tbody').append(`
+      <tr>
+        <td>${r.date}</td>
+        <td>${r.generated.toFixed(2)}</td>
+        <td>${r.exported.toFixed(2)}</td>
+        <td>${r.peak.toLocaleString()}</td>
+        <td>${r.time}</td>
+      </tr>
+    `);
+  });
+
+  // Init DataTable
+  $('#top10Table').DataTable({
+    order: [[1,'desc']]
+  });
+
+  // Draw chart
+  let chart;
+  function drawChart(isDark) {
+    if (chart) chart.destroy();
+    chart = new Chart(document.getElementById("top10Chart"), {
+      type: 'bar',
+      data: {
+        labels: top10.map(r => r.date),
+        datasets: [{
+          label: 'Generated (kWh)',
+          data: top10.map(r => r.generated),
+          backgroundColor: 'rgba(255, 159, 64, 0.7)',
+          borderColor: 'rgba(255, 159, 64, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { labels: { color: isDark ? '#eee' : '#333' } },
+          title: {
+            display: true,
+            text: 'Top 10 Best Production Days',
+            color: isDark ? '#eee' : '#333'
+          }
+        },
+        scales: {
+          x: { ticks: { color: isDark ? '#eee' : '#333' } },
+          y: { ticks: { color: isDark ? '#eee' : '#333' } }
+        }
+      }
+    });
+  }
+
+  // 🌙 Dark mode
+  const toggle = document.getElementById("darkModeToggle");
+  function applyMode(){
+    const isDark = document.body.classList.contains("dark-mode");
+    toggle.textContent = isDark ? "☀️" : "🌙";
+    drawChart(isDark);
+  }
+  if (localStorage.getItem("darkMode") === "enabled") {
+    document.body.classList.add("dark-mode");
+  }
+  applyMode();
+
+  toggle.addEventListener("click", () => {
+    document.body.classList.toggle("dark-mode");
+    if (document.body.classList.contains("dark-mode")) {
+      localStorage.setItem("darkMode","enabled");
+    } else {
+      localStorage.setItem("darkMode","disabled");
+    }
+    applyMode();
+  });
+});
+</script>
+</body>
+</html>
