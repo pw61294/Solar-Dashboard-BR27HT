@@ -21,7 +21,17 @@
     justify-content: space-between;
     align-items: center;
   }
-  header a { color: #fff; text-decoration: none; }
+  .header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .header-left a {
+    color:white;
+    text-decoration:none;
+    font-size: 1em;
+    padding: 2px 0;
+  }
   main {
     max-width: 1000px;
     margin: auto;
@@ -42,21 +52,27 @@
   body.dark-mode { background: #1e1e1e; color: #eee; }
   body.dark-mode header { background: #111; color: #eee; }
   body.dark-mode table, body.dark-mode canvas { background: #2a2a2a; color: #eee; }
-  #darkModeToggle { background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0; margin: 0; }
+  #darkModeToggle { background: none; border: none; font-size: 1.5rem; cursor: pointer; padding: 0; margin: 0; }
   #darkModeToggle:focus { outline: none; }
 </style>
 </head>
 <body>
 <header>
-  <a href="index.html">⬅ Back to Dashboard</a>
+  <div class="header-left">
+    <a href="index.html">🏠 Dashboard</a>
+    <a href="top10.html">🏆 Top 10</a>
+    <a href="monthly.html">📅 Monthly</a>
+  </div>
   <h2>🏆 Top 10 Solar Production Days</h2>
   <button id="darkModeToggle">🌙</button>
 </header>
 
 <main>
-  <canvas id="top10Chart" height="120"></canvas>
+  <div style="height:500px;">
+    <canvas id="top10Chart"></canvas>
+  </div>
 
-  <table id="top10Table" class="display" style="width:100%">
+  <table id="top10Table" class="display stripe hover" style="width:100%">
     <thead>
       <tr>
         <th>Date</th>
@@ -74,6 +90,7 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 <script>
 const rawData = `
 20250702,291,0,577,18:37,Cloudy
@@ -123,6 +140,8 @@ const rawData = `
 20250815,50293,20900,6776,12:12,Sunny
 20250816,10421,2000,1867,13:52,Cloudy
 20250817,52312,21700,6934,12:01,Sunny
+20250818,16978,5200,5236,11:06,Cloudy
+20250819,33255,8500,6981,11:19,Partly Cloudy
 `;
 
 const weatherEmoji = {
@@ -157,34 +176,50 @@ $(document).ready(function(){
     `);
   });
 
-  const table = $('#top10Table').DataTable({ order: [[1,'desc']] });
+  $('#top10Table').DataTable({ order: [[1,'desc']], stripeClasses:['odd','even'] });
 
   let chart;
   function drawChart(isDark){
     if(chart) chart.destroy();
-    chart = new Chart(document.getElementById("top10Chart"), {
+    const ctx = document.getElementById("top10Chart").getContext('2d');
+
+    const gradient = ctx.createLinearGradient(0,0,0,400);
+    gradient.addColorStop(0, 'rgba(255,159,64,1)');
+    gradient.addColorStop(1, 'rgba(255,159,64,0.5)');
+
+    chart = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: top10.map(r=>r.date),
         datasets:[{
           label:'Generated (kWh)',
           data: top10.map(r=>r.generated),
-          backgroundColor:'rgba(255,159,64,0.7)',
-          borderColor:'rgba(255,159,64,1)',
-          borderWidth:1
+          backgroundColor: gradient,
+          borderRadius: 8,
+          borderWidth:1,
+          hoverBackgroundColor: 'rgba(255,159,64,0.9)'
         }]
       },
       options:{
         responsive:true,
+        maintainAspectRatio:false,
         plugins:{
-          legend:{ labels:{ color:isDark?'#eee':'#333' } },
-          title:{ display:true, text:'Top 10 Best Production Days', color:isDark?'#eee':'#333' }
+          legend:{ labels:{ color:isDark?'#eee':'#333', font:{ size:16 } } },
+          title:{ display:true, text:'Top 10 Best Production Days', color:isDark?'#eee':'#333', font:{ size:20 } },
+          datalabels:{
+            anchor:'end',
+            align:'end',
+            color:isDark?'#eee':'#000',
+            font:{ size:14, weight:'bold' },
+            formatter: v => v.toFixed(2)+' kWh'
+          }
         },
         scales:{
-          x:{ ticks:{ color:isDark?'#eee':'#333' } },
-          y:{ ticks:{ color:isDark?'#eee':'#333' } }
+          x:{ ticks:{ color:isDark?'#eee':'#333', font:{ size:14 } } },
+          y:{ ticks:{ color:isDark?'#eee':'#333', font:{ size:14 } } }
         }
-      }
+      },
+      plugins:[ChartDataLabels]
     });
   }
 
@@ -193,9 +228,8 @@ $(document).ready(function(){
     const isDark = document.body.classList.contains("dark-mode");
     toggle.textContent = isDark?"☀️":"🌙";
     drawChart(isDark);
-    // Table dark mode colors
-    if(isDark){ $('#top10Table').addClass('dark-mode'); }else{ $('#top10Table').removeClass('dark-mode'); }
   }
+
   if(localStorage.getItem("darkMode")==="enabled"){ document.body.classList.add("dark-mode"); }
   applyMode();
 

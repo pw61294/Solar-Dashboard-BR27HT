@@ -8,28 +8,40 @@
 <style>
 body {
   font-family: Arial, sans-serif;
-  background: #f5f5f5;
+  background: #1e1e1e;
+  color: #eee;
   margin: 0;
   padding: 0;
   transition: background 0.3s, color 0.3s;
 }
 header {
-  background: #2c3e50;
-  color: #fff;
+  background: #111;
+  color: #eee;
   padding: 15px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 .header-center {
-  text-align: center;
   flex-grow: 1;
+  text-align: center;
 }
-.header-left, .header-right {
-  width: 80px;
+.header-right {
   display: flex;
-  justify-content: flex-end;
   align-items: center;
+  justify-content: flex-end;
+}
+.header-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+}
+.header-left a {
+  color: #eee;
+  text-decoration: none;
+  font-size: 1em;
+  padding: 2px 0;
 }
 header button {
   cursor: pointer;
@@ -51,72 +63,55 @@ main {
 }
 .summary-card {
   flex: 1 1 calc(25% - 15px);
-  background: #fff;
+  background: #2a2a2a;
   border-radius: 10px;
   padding: 15px;
   text-align: center;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(255,255,255,0.1);
   transition: background 0.3s, color 0.3s;
 }
-.summary-card h2 { margin: 0; font-size: 1.5em; color: #2c3e50; }
-.summary-card p { margin: 5px 0 0; font-size: 0.9em; color: #555; }
+.summary-card h2 { margin: 0; font-size: 1.5em; color: #eee; }
+.summary-card p { margin: 5px 0 0; font-size: 0.9em; color: #bbb; }
 canvas {
-  background: #fff;
+  background: #2a2a2a;
   border-radius: 10px;
   padding: 15px;
   margin-bottom: 30px;
   transition: background 0.3s;
 }
 table {
-  background: #fff;
+  background: #2a2a2a;
   border-radius: 10px;
   overflow: hidden;
+  color: #eee;
   transition: background 0.3s, color 0.3s;
 }
-
-/* 🌙 Dark Mode */
-body.dark-mode {
-  background: #1e1e1e;
-  color: #eee;
-}
-body.dark-mode header { background: #111; color: #eee; }
-body.dark-mode .summary-card {
-  background: #2a2a2a; color: #eee;
-  box-shadow: 0 2px 5px rgba(255,255,255,0.1);
-}
-body.dark-mode .summary-card h2 { color: #eee; }
-body.dark-mode .summary-card p { color: #bbb; }
-body.dark-mode canvas { background: #2a2a2a; }
-body.dark-mode table { background: #2a2a2a; color: #eee; }
-
-/* DataTable Dark Mode */
-#solarTable.dark-mode { background: #2a2a2a; color: #eee; }
 #solarTable.dark-mode th,
 #solarTable.dark-mode td { color: #eee; border-color: #444; }
 .dataTables_wrapper .dataTables_paginate .paginate_button { color: #eee !important; }
 
-/* Dark mode toggle button */
 #darkModeToggle { font-size: 1.3em; background: none; border: none; cursor: pointer; padding: 0; margin: 0; }
 #darkModeToggle:focus { outline: none; }
 
-/* Responsive cards */
 @media(max-width:800px) {
   .summary-card { flex: 1 1 100%; }
 }
 </style>
 </head>
-<body>
+<body class="dark-mode">
+
 <header>
   <div class="header-left">
-    <a href="top10.html" style="color:white; text-decoration:none; font-size:1em;">🏆 Top 10</a>
+    <a href="index.html">🏠 Dashboard</a>
+    <a href="top10.html">🏆 Top 10</a>
+    <a href="monthly.html">📅 Monthly</a>
   </div>
-  <div class="header-left"></div>
   <div class="header-center">
     <h1>Paul's Solar Production Dashboard</h1>
     <p>Daily Solar Production Overview</p>
   </div>
   <div class="header-right">
-    <button id="darkModeToggle">🌙</button>
+    <button id="darkModeToggle">☀️</button>
   </div>
 </header>
 
@@ -131,7 +126,7 @@ body.dark-mode table { background: #2a2a2a; color: #eee; }
 </div>
 
 <canvas id="solarChart" height="100"></canvas>
-<table id="solarTable" class="display" style="width:100%">
+<table id="solarTable" class="display dark-mode" style="width:100%">
   <thead>
     <tr>
       <th>Date</th>
@@ -202,16 +197,11 @@ const rawData = `
 20250819,33255,8500,6981,11:19,Partly Cloudy
 `;
 
-const dataRows = rawData.trim().split("\n").map(row => row.split(","));
+const dataRows = rawData.trim().split("\n").map(r => r.split(","));
 const chartLabels = [], mainData = [], batteryData = [];
 let totalMain=0, totalExport=0, maxMain={value:0,date:""}, maxExport={value:0,date:""};
 
-const weatherEmoji = {
-  "Sunny": "☀️ Sunny",
-  "Cloudy": "☁️ Cloudy",
-  "Partly Cloudy": "⛅ Partly Cloudy",
-  "Rainy": "🌧️ Rainy"
-};
+const weatherEmoji = { "Sunny":"☀️ Sunny", "Cloudy":"☁️ Cloudy", "Partly Cloudy":"⛅ Partly Cloudy", "Rainy":"🌧️ Rainy" };
 
 dataRows.forEach(r=>{
   const y=r[0].slice(0,4), m=r[0].slice(4,6), d=r[0].slice(6,8);
@@ -241,27 +231,10 @@ dataRows.forEach(r=>{
 
 // Summary cards
 $('#totalOutput').text(`${totalMain.toFixed(2)} kWh`);
-const earnings=totalExport*0.165;
-$('#totalExport').html(`${totalExport.toFixed(2)} kWh<br><span style="font-size:0.8em; color:#555;">£${earnings.toFixed(2)}</span>`);
-const avgOutput=totalMain/dataRows.length;
-const avgEarnings=(totalExport/dataRows.length)*0.165;
-$('#avgOutput').html(`${avgOutput.toFixed(2)} kWh<br><span style="font-size:0.8em; color:#555;">£${avgEarnings.toFixed(2)} / day</span>`);
+$('#totalExport').html(`${totalExport.toFixed(2)} kWh<br><span style="font-size:0.8em; color:#bbb;">£${(totalExport*0.165).toFixed(2)}</span>`);
+$('#avgOutput').html(`${(totalMain/dataRows.length).toFixed(2)} kWh<br><span style="font-size:0.8em; color:#bbb;">£${((totalExport/dataRows.length)*0.165).toFixed(2)} / day</span>`);
 $('#maxDay').text(`${maxMain.value.toFixed(2)} kWh (${maxMain.date})`);
 $('#maxBattery').text(`${maxExport.value.toFixed(2)} kWh (${maxExport.date})`);
-
-// Monthly earnings
-const monthlyTotals={};
-dataRows.forEach(r=>{
-  const key=`${r[0].slice(0,4)}-${r[0].slice(4,6)}`;
-  const exportKWh=Number(r[2])/1000;
-  if(!monthlyTotals[key]) monthlyTotals[key]=0;
-  monthlyTotals[key]+=exportKWh;
-});
-const sortedMonths=Object.keys(monthlyTotals).sort().reverse();
-const thisMonth=sortedMonths[0], lastMonth=sortedMonths[1];
-const thisMonthEarnings=(monthlyTotals[thisMonth]*0.165).toFixed(2);
-const lastMonthEarnings=lastMonth?(monthlyTotals[lastMonth]*0.165).toFixed(2):"0.00";
-$('#monthlyEarnings').html(`£${thisMonthEarnings} (${thisMonth})<br><span style="font-size:0.8em; color:#555;">Last month: £${lastMonthEarnings}</span>`);
 
 // DataTable
 const solarTable=$('#solarTable').DataTable({order:[[0,'desc']],responsive:true});
@@ -282,22 +255,19 @@ function createChart(isDark){
     }
   });
 }
-let solarChart=createChart(document.body.classList.contains('dark-mode'));
+let solarChart=createChart(true);
 
 // Dark Mode Toggle
 const toggle=document.getElementById("darkModeToggle");
-if(localStorage.getItem("darkMode")==="enabled"){document.body.classList.add("dark-mode");toggle.textContent="☀️";}
 toggle.addEventListener("click",()=>{
   document.body.classList.toggle("dark-mode");
   const isDark=document.body.classList.contains("dark-mode");
   localStorage.setItem("darkMode",isDark?"enabled":"disabled");
   toggle.textContent=isDark?"☀️":"🌙";
 
-  // Update chart
   solarChart.destroy();
   solarChart=createChart(isDark);
 
-  // Update table
   if(isDark){$('#solarTable').addClass('dark-mode');}else{$('#solarTable').removeClass('dark-mode');}
 });
 </script>
