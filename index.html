@@ -210,6 +210,22 @@ dataRows.forEach(r=>{
   const sortKey=`${y}${m}${d}`, displayDate=`${y}-${m}-${d}`;
   const main=Number(r[1])/1000, battery=Number(r[2])/1000;
 
+// Monthly Earnings Calculation
+const monthlyTotals = {};
+dataRows.forEach(r => {
+  const yearMonth = r[0].slice(0,6); // e.g., "202507"
+  const exportKWh = Number(r[2]) / 1000;
+  if (!monthlyTotals[yearMonth]) monthlyTotals[yearMonth] = 0;
+  monthlyTotals[yearMonth] += exportKWh;
+});
+
+// Get latest month
+const latestMonth = Object.keys(monthlyTotals).sort().pop();
+const latestEarnings = monthlyTotals[latestMonth] * 0.165;
+
+$('#monthlyEarnings').html(`£${latestEarnings.toFixed(2)}<br><span style="font-size:0.8em; color:#bbb;">${latestMonth.slice(0,4)}-${latestMonth.slice(4,6)}</span>`);
+
+
   chartLabels.push(displayDate);
   mainData.push(main);
   batteryData.push(battery);
