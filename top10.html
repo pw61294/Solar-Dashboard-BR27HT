@@ -12,18 +12,9 @@
     margin: 0;
     padding: 0;
     transition: background 0.3s, color 0.3s;
+    color: #e0e0e0;
   }
-body.dark-mode {
-  background: #232832;
-  color: #e0e0e0;
-}
 
-body.dark-mode header,
-body.dark-mode table,
-body.dark-mode canvas {
-  background: #16181d;
-  color: #e0e0e0;
-}
   header {
     background: #16181d;
     color: #fff;
@@ -32,45 +23,44 @@ body.dark-mode canvas {
     justify-content: space-between;
     align-items: center;
   }
+
   .header-left {
     display: flex;
     flex-direction: column;
     gap: 5px;
   }
+
   .header-left a {
-    color:white;
-    text-decoration:none;
+    color: white;
+    text-decoration: none;
     font-size: 1em;
     padding: 2px 0;
   }
-     #darkModeToggle {
-  color: #16181d;
-  padding: 5px;
-  border-radius: 6px;
-}
 
-#darkModeToggle:hover {
-  background-color: #16181d;
-  box-shadow: 0 0 8px #2563eb;
-}
+  .header-title {
+    flex-grow: 1;
+    text-align: center;
+  }
 
   main {
     max-width: 1000px;
     margin: auto;
     padding: 20px;
   }
+
   table {
     background: #16181d;
     border-radius: 10px;
     overflow: hidden;
     margin-top: 20px;
   }
+
   canvas {
     background: #16181d;
     border-radius: 10px;
     padding: 15px;
   }
- </style>
+</style>
 </head>
 <body>
 <header>
@@ -79,8 +69,9 @@ body.dark-mode canvas {
     <a href="top10.html">🏆 Top 10</a>
     <a href="monthly.html">📅 Monthly</a>
   </div>
-  <h2>🏆 Top 10 Solar Production Days</h2>
-  <button id="darkModeToggle">🌙</button>
+  <div class="header-title">
+    <h2>🏆 Top 10 Solar Production Days</h2>
+  </div>
 </header>
 
 <main>
@@ -161,6 +152,7 @@ const rawData = `
 20250820,24105,9100,7561,14:00,Cloudy
 `;
 
+
 const weatherEmoji = {
   "Sunny": "☀️ Sunny",
   "Cloudy": "☁️ Cloudy",
@@ -195,65 +187,44 @@ $(document).ready(function(){
 
   $('#top10Table').DataTable({ order: [[1,'desc']], stripeClasses:['odd','even'] });
 
-  let chart;
-  function drawChart(isDark){
-    if(chart) chart.destroy();
-    const ctx = document.getElementById("top10Chart").getContext('2d');
+  const ctx = document.getElementById("top10Chart").getContext('2d');
+  const gradient = ctx.createLinearGradient(0,0,0,400);
+  gradient.addColorStop(0, 'rgba(255,159,64,1)');
+  gradient.addColorStop(1, 'rgba(255,159,64,0.5)');
 
-    const gradient = ctx.createLinearGradient(0,0,0,400);
-    gradient.addColorStop(0, 'rgba(255,159,64,1)');
-    gradient.addColorStop(1, 'rgba(255,159,64,0.5)');
-
-    chart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: top10.map(r=>r.date),
-        datasets:[{
-          label:'Generated (kWh)',
-          data: top10.map(r=>r.generated),
-          backgroundColor: gradient,
-          borderRadius: 8,
-          borderWidth:1,
-          hoverBackgroundColor: 'rgba(255,159,64,0.9)'
-        }]
-      },
-      options:{
-        responsive:true,
-        maintainAspectRatio:false,
-        plugins:{
-          legend:{ labels:{ color:isDark?'#eee':'#333', font:{ size:16 } } },
-          title:{ display:true, text:'Top 10 Best Production Days', color:isDark?'#eee':'#333', font:{ size:20 } },
-          datalabels:{
-            anchor:'end',
-            align:'end',
-            color:isDark?'#eee':'#000',
-            font:{ size:14, weight:'bold' },
-            formatter: v => v.toFixed(2)+' kWh'
-          }
-        },
-        scales:{
-          x:{ ticks:{ color:isDark?'#eee':'#333', font:{ size:14 } } },
-          y:{ ticks:{ color:isDark?'#eee':'#333', font:{ size:14 } } }
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: top10.map(r=>r.date),
+      datasets:[{
+        label:'Generated (kWh)',
+        data: top10.map(r=>r.generated),
+        backgroundColor: gradient,
+        borderRadius: 8,
+        borderWidth:1,
+        hoverBackgroundColor: 'rgba(255,159,64,0.9)'
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{
+        legend:{ labels:{ color:'#eee', font:{ size:16 } } },
+        title:{ display:true, text:'Top 10 Best Production Days', color:'#eee', font:{ size:20 } },
+        datalabels:{
+          anchor:'end',
+          align:'end',
+          color:'#eee',
+          font:{ size:14, weight:'bold' },
+          formatter: v => v.toFixed(2)+' kWh'
         }
       },
-      plugins:[ChartDataLabels]
-    });
-  }
-
-  const toggle = document.getElementById("darkModeToggle");
-  function applyMode(){
-    const isDark = document.body.classList.contains("dark-mode");
-    toggle.textContent = isDark?"☀️":"🌙";
-    drawChart(isDark);
-  }
-
-  if(localStorage.getItem("darkMode")==="enabled"){ document.body.classList.add("dark-mode"); }
-  applyMode();
-
-  toggle.addEventListener("click",()=>{
-    document.body.classList.toggle("dark-mode");
-    localStorage.setItem("darkMode", document.body.classList.contains("dark-mode")?"enabled":"disabled");
-    applyMode();
+      scales:{
+        x:{ ticks:{ color:'#eee', font:{ size:14 } } },
+        y:{ ticks:{ color:'#eee', font:{ size:14 } } }
+      }
+    },
+    plugins:[ChartDataLabels]
   });
 });
 </script>
