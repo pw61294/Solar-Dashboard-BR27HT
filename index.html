@@ -248,7 +248,7 @@ $('#monthlyEarnings').html(`£${latestEarnings.toFixed(2)}<br><span style="font-
 });
 
 // Summary cards
-$('#totalOutput').text(`${totalMain.toFixed(2)} kWh`);
+$('#totalOutput').text(`${(totalMain / 1000).toFixed(2)} MWh`);
 $('#totalExport').html(`${totalExport.toFixed(2)} kWh<br><span style="font-size:0.8em; color:#bbb;">£${(totalExport*0.165).toFixed(2)}</span>`);
 $('#avgOutput').html(`${(totalMain/dataRows.length).toFixed(2)} kWh<br><span style="font-size:0.8em; color:#bbb;">£${((totalExport/dataRows.length)*0.165).toFixed(2)} / day</span>`);
 $('#maxDay').text(`${maxMain.value.toFixed(2)} kWh (${maxMain.date})`);
