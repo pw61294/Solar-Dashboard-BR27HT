@@ -188,9 +188,7 @@ $(document).ready(function(){
   $('#top10Table').DataTable({ order: [[1,'desc']], stripeClasses:['odd','even'] });
 
   const ctx = document.getElementById("top10Chart").getContext('2d');
-  const gradient = ctx.createLinearGradient(0,0,0,400);
-  gradient.addColorStop(0, 'rgba(255,159,64,1)');
-  gradient.addColorStop(1, 'rgba(255,159,64,0.5)');
+  const barColor = '#232832';
 
   new Chart(ctx, {
     type: 'bar',
@@ -199,10 +197,10 @@ $(document).ready(function(){
       datasets:[{
         label:'Generated (kWh)',
         data: top10.map(r=>r.generated),
-        backgroundColor: gradient,
+        backgroundColor: barColor,
         borderRadius: 8,
         borderWidth:1,
-        hoverBackgroundColor: 'rgba(255,159,64,0.9)'
+        hoverBackgroundColor: '#2e3440'
       }]
     },
     options:{
