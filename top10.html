@@ -8,13 +8,24 @@
 <style>
   body {
     font-family: Arial, sans-serif;
-    background: #f5f5f5;
+    background: #232832;
     margin: 0;
     padding: 0;
     transition: background 0.3s, color 0.3s;
   }
+body.dark-mode {
+  background: #232832;
+  color: #e0e0e0;
+}
+
+body.dark-mode header,
+body.dark-mode table,
+body.dark-mode canvas {
+  background: #16181d;
+  color: #e0e0e0;
+}
   header {
-    background: #2c3e50;
+    background: #16181d;
     color: #fff;
     padding: 15px 20px;
     display: flex;
@@ -32,29 +43,34 @@
     font-size: 1em;
     padding: 2px 0;
   }
+     #darkModeToggle {
+  color: #16181d;
+  padding: 5px;
+  border-radius: 6px;
+}
+
+#darkModeToggle:hover {
+  background-color: #16181d;
+  box-shadow: 0 0 8px #2563eb;
+}
+
   main {
     max-width: 1000px;
     margin: auto;
     padding: 20px;
   }
   table {
-    background: #fff;
+    background: #16181d;
     border-radius: 10px;
     overflow: hidden;
     margin-top: 20px;
   }
   canvas {
-    background: #fff;
+    background: #16181d;
     border-radius: 10px;
     padding: 15px;
   }
-  /* Dark mode */
-  body.dark-mode { background: #1e1e1e; color: #eee; }
-  body.dark-mode header { background: #111; color: #eee; }
-  body.dark-mode table, body.dark-mode canvas { background: #2a2a2a; color: #eee; }
-  #darkModeToggle { background: none; border: none; font-size: 1.5rem; cursor: pointer; padding: 0; margin: 0; }
-  #darkModeToggle:focus { outline: none; }
-</style>
+ </style>
 </head>
 <body>
 <header>
