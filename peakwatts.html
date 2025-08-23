@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Top 10 Peak Wattage Days</title>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #232832;
+      color: #e0e0e0;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #16181d;
+      color: #fff;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header-left a {
+      color: white;
+      text-decoration: none;
+      display: block;
+      margin-bottom: 5px;
+    }
+    .header-title {
+      flex-grow: 1;
+      text-align: center;
+    }
+    main {
+      max-width: 1000px;
+      margin: auto;
+      padding: 20px;
+    }
+    table {
+      background: #16181d;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+    canvas {
+      background: #16181d;
+      border-radius: 10px;
+      padding: 15px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <a href="index.html">🏠 Dashboard</a>
+      <a href="top10.html">🏆 Top 10</a>
+      <a href="monthly.html">📅 Monthly</a>
+      <a href="peakwatts.html">⚡ Peak Watts</a>
+    </div>
+    <div class="header-title">
+      <h2>⚡ Top 10 Peak Wattage Days</h2>
+    </div>
+  </header>
+
+  <main>
+    <div style="height:500px;">
+      <canvas id="peakChart"></canvas>
+    </div>
+
+    <table id="peakTable" class="display stripe hover" style="width:100%">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Peak Watts</th>
+          <th>Time</th>
+          <th>Generated (kWh)</th>
+          <th>Weather</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </main>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <script>
+    const rawData = `
+20250702,291,0,577,18:37,Cloudy
+20250703,33626,15500,4853,13:29,Partly Cloudy
+20250704,35737,14900,5415,13:32,Partly Cloudy
+20250705,18870,8100,4463,13:38,Rainy
+20250706,20006,4200,5044,12:31,Partly Cloudy
+20250707,25658,7400,5989,14:02,Partly Cloudy
+20250708,37780,17800,5372,11:11,Sunny
+20250709,34654,13200,5962,13:30,Partly Cloudy
+20250710,36394,16200,4359,12:26,Partly Cloudy
+20250711,36446,14400,4244,11:34,Partly Cloudy
+20250712,36147,12800,4300,11:30,Partly Cloudy
+20250713,28394,3300,4901,14:12,Partly Cloudy
+20250714,33121,11000,5641,12:41,Partly Cloudy
+20250715,31809,9900,5453,12:13,Partly Cloudy
+20250716,35773,8100,5685,12:28,Partly Cloudy
+20250717,17364,6700,4615,10:49,Rainy
+20250718,32937,10800,5583,11:20,Partly Cloudy
+20250719,11048,1800,4861,14:52,Cloudy
+20250720,20234,13200,5314,14:50,Partly Cloudy
+20250721,27296,12500,5681,11:18,Partly Cloudy
+20250722,21117,6400,6101,11:27,Cloudy
+20250723,16972,6900,3755,09:59,Rainy
+20250724,12494,3900,3593,11:25,Cloudy
+20250725,30961,19600,4888,12:26,Partly Cloudy
+20250726,20433,8300,4595,15:31,Partly Cloudy
+20250727,18261,13400,5018,13:52,Cloudy
+20250728,33654,14800,5881,14:07,Partly Cloudy
+20250729,15511,200,4001,12:44,Rainy
+20250730,19034,7700,5185,11:11,Cloudy
+20250731,13691,100,5251,13:13,Cloudy
+20250801,20828,5600,5534,12:02,Cloudy
+20250802,21967,7400,4393,10:34,Cloudy
+20250803,23685,5700,4973,10:53,Cloudy
+20250804,15341,100,2885,12:10,Cloudy
+20250805,30710,12800,5197,13:30,Partly Cloudy
+20250806,37308,26100,4761,13:27,Partly Cloudy
+20250807,23584,9400,5443,12:26,Partly Cloudy
+20250808,33645,22500,5241,14:17,Partly Cloudy
+20250809,42103,14200,8600,13:09,Sunny
+20250810,54640,30800,7734,13:04,Sunny
+20250811,53647,31200,6829,11:52,Sunny
+20250812,52670,29600,6749,12:25,Sunny
+20250813,22965,200,5985,14:44,Cloudy
+20250814,35556,17900,8080,13:35,Partly Cloudy
+20250815,50293,20900,6776,12:12,Sunny
+20250816,10421,2000,1867,13:52,Cloudy
+20250817,52312,21700,6934,12:01,Sunny
+20250818,16978,5200,5236,11:06,Cloudy
+20250819,33255,8500,6981,11:19,Partly Cloudy
+20250820,24105,9100,7561,14:00,Cloudy
+20250821,19737,1900,4294,14:28,Cloudy
+20250822,39243,6300,7823,11:15,Partly Cloudy
+`;
+
+    const weatherEmoji = {
+      "Sunny": "☀️ Sunny",
+      "Cloudy": "☁️ Cloudy",
+      "Partly Cloudy": "⛅ Partly Cloudy",
+      "Rainy": "🌧️ Rainy"
+    };
+
+    $(document).ready(function(){
+      const dataRows = rawData.trim().split("\n").map(r => r.split(",")).map(r => ({
+        date: `${r[0].slice(0,4)}-${r[0].slice(4,6)}-${r[0].slice(6,8)}`,
+        generated: Number(r[1])/1000,
+        peak: Number(r[3]),
+        time: r[4],
+        weather: r[5]
+      }));
+
+      const topPeak = dataRows.sort((a,b)=>b.peak-a.peak).slice(0,10);
+
+      topPeak.forEach(r => {
+        $('#peakTable tbody').append(`
+          <tr>
+            <td>${r.date}</td>
+            <td>${r.peak.toLocaleString()}</td>
+            <td>${r.time}</td>
+            <td>${r.generated.toFixed(2)}</td>
+            <td>${weatherEmoji[r.weather] || r.weather}</td>
+          </tr>
+        `);
+      });
+
+      $('#peakTable').DataTable({ order: [[1,'desc']], stripeClasses:['odd','even'] });
+
+      const ctx = document.getElementById("peakChart").getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: topPeak.map(r => r.date),
+          datasets: [{
+            label: 'Peak Watts',
+            data: topPeak.map(r => r.peak),
+            backgroundColor: '#232832',
+            borderRadius: 8,
+            hoverBackgroundColor: '#2e3440'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: '#eee',
+                font: { size: 16 }
+              }
+            },
+            title: {
+              display: true,
+              text: 'Top 10 Peak Wattage Days',
+              color: '#eee',
+              font: { size: 20 }
+            },
+            datalabels: {
+              anchor: 'center',
+              align: 'center',
+              color: '#fff',
+              font: {
+                size: 14,
+                weight: 'bold'
+              },
+              formatter: function(value, context) {
+                const peakTime = topPeak[context.dataIndex].time;
+                return [`${value.toLocaleString()} W`, `${peakTime}`];
+              },
+              textAlign: 'center',
+              display: true
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                color: '#eee',
+                font: { size: 14 }
+              }
+            },
+            y: {
+              ticks: {
+                color: '#eee',
+                font: { size: 14 }
+              }
+            }
+          }
+        },
+        plugins: [ChartDataLabels]
+      });
+    });
+  </script>
+</body>
+</html>
