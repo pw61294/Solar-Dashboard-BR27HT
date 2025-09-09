@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monthly Solar Production</title>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #232832;
+      color: #e0e0e0;
+      margin: 0;
+      padding: 0;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    header {
+      background: #16181d;
+      color: #ffffff;
+      padding: 20px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .header-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 10px;
+      padding-top: 10px;
+    }
+    .header-left a {
+      color:white;
+      font-weight: 500;
+      text-decoration: none; /* removes underline */
+      margin-right: 20px;
+      transition: color 0.3s;
+}
+
+    .header-left a:hover {
+      color: #5dade2;
+    }
+
+    .header-center h1 {
+      font-size: 1.8em;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    main {
+      padding: 30px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    canvas {
+      background: #16181d;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-left">
+      <a href="index.html">🏠 Dashboard</a>
+      <a href="top10.html">🏆 Top 10</a>
+      <a href="monthly.html">📅 Monthly</a>
+      <a href="peakwatts.html">⚡ Peak Watts</a>
+    </div>
+    <div class="header-center">
+      <h1>Monthly Solar Production</h1>
+    </div>
+    <div class="header-right">
+    </div>
+  </header>
+
+  <main>
+    <div style="height:500px;">
+      <canvas id="monthlyChart"></canvas>
+    </div>
+  </main>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <script>
+    const rawData = `20250702,291
+20250703,33626
+20250704,35737
+20250705,18870
+20250706,20006
+20250707,25658
+20250708,37780
+20250709,34654
+20250710,36394
+20250711,36446
+20250712,36147
+20250713,28394
+20250714,33121
+20250715,31809
+20250716,35773
+20250717,17364
+20250718,32937
+20250719,11048
+20250720,20234
+20250721,27296
+20250722,21117
+20250723,16972
+20250724,12494
+20250725,30961
+20250726,20433
+20250727,18261
+20250728,33654
+20250729,15511
+20250730,19034
+20250731,13691
+20250801,20828
+20250802,21967
+20250803,23685
+20250804,15341
+20250805,30710
+20250806,37308
+20250807,23584
+20250808,33645
+20250809,42103
+20250810,54640
+20250811,53647
+20250812,52670
+20250813,22965
+20250814,35556
+20250815,50293
+20250816,10421
+20250817,52312
+20250818,16978
+20250819,33255
+20250820,24105
+20250821,19737
+20250822,39243
+20250823,28462
+20250824,44424
+20250825,51219
+20250826,31960
+20250827,31190
+20250828,37594
+20250829,23434
+20250830,32720
+20250831,39794
+20250901,37828
+20250902,26021
+20250903,19196
+20250904,30399
+20250905,38156
+20250906,39170
+20250907,38121
+20250908,42680
+`;
+
+    const dataRows = rawData.trim().split("\n").map(r => r.split(","));
+    const monthlyGenerated = {};
+    dataRows.forEach(r => {
+      const key = `${r[0].slice(0, 4)}-${r[0].slice(4, 6)}`;
+      const generated = Number(r[1]) / 1000;
+      if (!monthlyGenerated[key]) monthlyGenerated[key] = 0;
+      monthlyGenerated[key] += generated;
+    });
+
+    const ctx = document.getElementById('monthlyChart').getContext('2d');
+
+    function createMonthlyChart(isDark) {
+      const months = Object.keys(monthlyGenerated).sort();
+      const values = months.map(m => monthlyGenerated[m]);
+      const monthNames = ["January", "February", "March", "April", "May", "June",
+                          "July", "August", "September", "October", "November", "December"];
+      const labels = months.map(m => monthNames[Number(m.split("-")[1]) - 1]);
+
+      const gradient = ctx.createLinearGradient(0, 0, 0, 250);
+      gradient.addColorStop(0, isDark ? '#3498db' : '#f39c12');
+      gradient.addColorStop(1, isDark ? '#2c3e50' : '#e67e22');
+
+      return new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Generated (kWh)',
+            data: values,
+            backgroundColor: gradient,
+            borderRadius: 12,
+            hoverBackgroundColor: isDark ? '#2980b9' : '#d35400',
+            borderWidth: 1,
+            barPercentage: 0.7,
+            categoryPercentage: 0.6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: isDark ? '#eee' : '#2c3e50',
+                font: { size: 16 }
+              }
+            },
+            title: {
+              display: true,
+              text: 'Monthly Generated kWh',
+              color: isDark ? '#eee' : '#2c3e50',
+              font: { size: 24 }
+            },
+            datalabels: {
+              color: isDark ? '#eee' : '#2c3e50',
+              anchor: 'end',
+              align: 'end',
+              font: { weight: 'bold', size: 16 },
+              formatter: v => v.toFixed(2) + ' kWh'
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                color: isDark ? '#eee' : '#2c3e50',
+                padding: 10,
+                font: { size: 16 }
+              },
+              grid: {
+                color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(44,62,80,0.05)'
+              }
+            },
+            y: {
+              ticks: {
+                color: isDark ? '#eee' : '#2c3e50',
+                padding: 10,
+                font: { size: 16 }
+              },
+              grid: {
+                color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(44,62,80,0.05)'
+              }
+            }
+          }
+        },
+        plugins: [ChartDataLabels]
+      });
+    }
+
+    let monthlyChart = createMonthlyChart(true);
+  </script>
+</body>
+</html>
